@@ -305,4 +305,4 @@ This project is released under the [MIT License](LICENSE).
 
 ---
 
-Thank you for using **Python Script Server**! If you have any questions or run into issues, please open an issue or submit a pull request.
+Thank you for using **Scripter**! If you have any questions or run into issues, please open an issue or submit a pull request.
