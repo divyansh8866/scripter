@@ -2,30 +2,55 @@ import os
 import sys
 import inspect
 import subprocess
+import datetime
+
 from flask import Flask, render_template, request, Response, url_for, redirect
 
-app = Flask(__name__)
+app = Flask(__name__, static_folder="static", template_folder="templates")
 SCRIPTS_DIR = os.path.join(os.path.dirname(__file__), "scripts")
 
 
-def list_scripts():
+def build_script_tree(base_path):
     """
-    Return a sorted list of all .py files under scripts/ (excluding __init__.py).
+    Recursively walk base_path and return a nested dict structure:
+      {
+        "files": [list of .py filenames in this directory],
+        "subdirs": {
+           subfolder_name: { ... same structure ... },
+           ...
+        }
+      }
     """
-    return sorted(
-        fname
-        for fname in os.listdir(SCRIPTS_DIR)
-        if fname.endswith(".py") and not fname.startswith("__")
-    )
+    tree = {"files": [], "subdirs": {}}
+    for entry in sorted(os.listdir(base_path)):
+        full = os.path.join(base_path, entry)
+        if os.path.isdir(full) and not entry.startswith("__"):
+            # Recurse into subfolder
+            tree["subdirs"][entry] = build_script_tree(full)
+        elif os.path.isfile(full) and entry.endswith(".py") and not entry.startswith("__"):
+            tree["files"].append(entry)
+    return tree
 
 
-def get_functions(script_name):
+@app.context_processor
+def inject_current_year():
+    return {"current_year": datetime.datetime.now().year}
+
+
+@app.route("/", methods=["GET"])
+def index():
     """
-    Import the given script (by filename) and return a dict mapping each
-    top-level function name to its inspect.Signature (which includes annotations).
+    Build a nested folder→scripts tree and pass into the template.
     """
-    module_name = script_name[:-3]
-    sys.path.insert(0, SCRIPTS_DIR)
+    tree = build_script_tree(SCRIPTS_DIR)
+    return render_template("index.html", script_tree=tree, parent_path="") 
+
+
+# (Other routes like /select/<...> and /run remain unchanged)
+
+
+def list_functions(module_name: str, module_folder: str):
+    sys.path.insert(0, module_folder)
     try:
         module = __import__(module_name)
     except Exception:
@@ -40,103 +65,84 @@ def get_functions(script_name):
     return funcs
 
 
-def build_funcs_meta(functions_signatures):
+@app.route("/select/<path:folder_and_script>", methods=["GET"])
+def select_script(folder_and_script):
     """
-    Given a dict {func_name: Signature}, return a dict:
-      {
-        func_name: [
-          {
-            "name": param_name,
-            "annotation": annotation,
-            "default": default or None,
-            "input_type": "number"/"text",
-            "step": "1"/"any"/None,
-            "dtype": "int"/"float"/"string"/<other>,
-            "type_name": annotation.__name__ or "string"
-          },
-          ...
-        ],
-        ...
-      }
+    folder_and_script will be something like "Category/Subcategory/sample_script.py"
+    We split on the last slash to find folder vs. filename.
     """
-    meta = {}
-    _empty = inspect._empty
-    for func_name, sig in functions_signatures.items():
-        params = []
-        for param_name, param_obj in sig.parameters.items():
-            ann = param_obj.annotation
-            default_val = None if param_obj.default is _empty else param_obj.default
+    # Split into folder path and script filename
+    folder_part, script_filename = os.path.split(folder_and_script)
+    if folder_part == "":
+        module_folder = SCRIPTS_DIR
+    else:
+        module_folder = os.path.join(SCRIPTS_DIR, folder_part)
 
-            # Decide input_type/step/dtype/type_name based on annotation
-            if ann == int:
-                input_type = "number"
-                step = "1"
-                dtype = "int"
-                type_name = "int"
-            elif ann == float:
-                input_type = "number"
-                step = "any"
-                dtype = "float"
-                type_name = "float"
-            else:
-                # anything else (including str or no annotation) → text
-                input_type = "text"
-                step = None
-                # If annotation is a type, use its __name__; otherwise "string"
-                if ann != _empty and isinstance(ann, type):
-                    dtype = ann.__name__
-                    type_name = ann.__name__
-                else:
-                    dtype = "string"
-                    type_name = "string"
-
-            params.append({
-                "name": param_name,
-                "annotation": ann,
-                "default": default_val,
-                "input_type": input_type,
-                "step": step,
-                "dtype": dtype,
-                "type_name": type_name,
-            })
-        meta[func_name] = params
-    return meta
-
-
-@app.route("/", methods=["GET"])
-def index():
-    """
-    List all available scripts. User picks one to see its functions.
-    """
-    scripts = list_scripts()
-    return render_template("index.html", scripts=scripts)
-
-
-@app.route("/select/<script_name>", methods=["GET"])
-def select_script(script_name):
-    """
-    After the user selects a script, introspect its functions and show a second page.
-    If script_name is invalid, redirect back to index.
-    """
-    scripts = list_scripts()
-    if script_name not in scripts:
+    # Verify file exists
+    script_path = os.path.join(module_folder, script_filename)
+    if not os.path.isfile(script_path):
         return redirect(url_for("index"))
 
-    funcs_signatures = get_functions(script_name)
+    module_name, _ = os.path.splitext(script_filename)
+    sys.path.insert(0, module_folder)
+    try:
+        funcs_signatures = list_functions(module_name, module_folder)
+    finally:
+        sys.path.pop(0)
+
+    # Build metadata for each function (same as before)
+    def build_funcs_meta(functions_signatures):
+        meta = {}
+        _empty = inspect._empty
+        for fname, sig in functions_signatures.items():
+            params = []
+            for param_name, param_obj in sig.parameters.items():
+                ann = param_obj.annotation
+                default_val = None if param_obj.default is _empty else param_obj.default
+
+                if ann == int:
+                    input_type = "number"
+                    step = "1"
+                    dtype = "int"
+                    type_name = "int"
+                elif ann == float:
+                    input_type = "number"
+                    step = "any"
+                    dtype = "float"
+                    type_name = "float"
+                else:
+                    input_type = "text"
+                    step = None
+                    if ann != _empty and isinstance(ann, type):
+                        dtype = ann.__name__
+                        type_name = ann.__name__
+                    else:
+                        dtype = "string"
+                        type_name = "string"
+
+                params.append({
+                    "name": param_name,
+                    "annotation": ann,
+                    "default": default_val,
+                    "input_type": input_type,
+                    "step": step,
+                    "dtype": dtype,
+                    "type_name": type_name,
+                })
+            meta[fname] = params
+        return meta
+
     funcs_meta = build_funcs_meta(funcs_signatures)
 
     return render_template(
         "run_script.html",
-        script_name=script_name,
+        script_name=folder_and_script,
         functions_signatures=funcs_signatures,
         functions_meta=funcs_meta
     )
 
 
 def stream_subprocess(cmd, workdir):
-    """
-    Run the given command as a subprocess, yield stdout/stderr lines as they appear.
-    """
     proc = subprocess.Popen(
         cmd,
         cwd=workdir,
@@ -156,20 +162,26 @@ def stream_subprocess(cmd, workdir):
 @app.route("/run", methods=["POST"])
 def run_script():
     """
-    Receive form fields:
-      - script    (script name without .py)
-      - function  (name of the function)
-      - other fields matching that function’s parameters
-
-    Builds and runs:
-      python dispatcher.py --script <script> --function <function> --<param> <value> …
-
-    Streams stdout+stderr back to the client.
+    Receive:
+      - 'script': e.g. "Category/Subcategory/sample_script.py"
+      - 'function': function name
+      - plus all parameter fields
+    Build a dispatcher command: python dispatcher.py --script Category/Subcategory/sample_script --function ...
     """
-    script = request.form.get("script")
+    full_script = request.form.get("script")  # includes ".py"
     function = request.form.get("function")
 
-    # Collect only other form fields as function parameters
+    folder_part, script_filename = os.path.split(full_script)
+    module_name, _ = os.path.splitext(script_filename)
+
+    if folder_part == "":
+        workdir = SCRIPTS_DIR
+        script_module_arg = module_name
+    else:
+        workdir = os.path.join(SCRIPTS_DIR, folder_part)
+        script_module_arg = f"{folder_part}/{module_name}"
+
+    # Collect parameters
     params = {
         key: val
         for key, val in request.form.items()
@@ -181,24 +193,20 @@ def run_script():
         sys.executable,
         dispatcher_path,
         "--script",
-        script,
+        script_module_arg,
         "--function",
         function,
     ]
-    for param, value in params.items():
-        full_cmd.append(f"--{param}")
-        full_cmd.append(str(value))
-
-    workdir = SCRIPTS_DIR  # run from within scripts/ so imports resolve correctly
+    for k, v in params.items():
+        full_cmd.extend([f"--{k}", str(v)])
 
     def generate():
         yield f"Running: {' '.join(full_cmd)}\n\n"
-        for output_line in stream_subprocess(full_cmd, workdir):
-            yield output_line
+        for out in stream_subprocess(full_cmd, workdir):
+            yield out
 
     return Response(generate(), mimetype="text/plain")
 
 
 if __name__ == "__main__":
-    # Listen on 0.0.0.0 so Docker (or local) can forward ports
     app.run(host="0.0.0.0", port=5000, debug=False)
