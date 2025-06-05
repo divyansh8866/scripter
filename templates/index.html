@@ -21,9 +21,18 @@
     .section-heading h2 {
       font-weight: 600;
       color: #0A2540;
+      margin-bottom: 0.25rem;
     }
     .section-heading p {
       color: #6C757D;
+      margin-bottom: 1.5rem;
+    }
+
+    /* Search box */
+    #searchBox {
+      max-width: 400px;
+      margin: 0 auto 1.5rem auto;
+      display: block;
     }
 
     /* Accordion styling */
@@ -32,17 +41,19 @@
       color: #0A2540;
       font-size: 1.1rem;
       padding: 1rem 1.25rem;
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
     }
     .accordion-button:not(.collapsed) {
       background-color: #E9ECEF;
     }
-    .accordion-button .bi-folder-fill {
-      font-size: 1.3rem;
-      color: #1F6FEB;
+    .accordion-button img.folder-icon {
+      margin-right: 0.75rem;
     }
     .accordion-body {
       background-color: #FFFFFF;
-      padding: 1rem;
+      padding: 1rem 1.5rem;
     }
 
     /* Script cards */
@@ -51,17 +62,38 @@
       border-radius: 0.75rem;
       background-color: #FFFFFF;
       transition: transform 0.2s, box-shadow 0.2s;
+      display: flex;
+      flex-direction: column;
+      height: 100%;
     }
     .script-card:hover {
       transform: translateY(-5px);
       box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
     }
+    .script-card .card-body {
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      padding: 1rem;
+    }
     .script-card .card-title {
       color: #1F6FEB;
       font-weight: 600;
+      text-align: center;
+      margin-bottom: 0.5rem;
+      font-size: 1rem;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
     .script-card .card-subtitle {
       color: #6C757D;
+      text-align: center;
+      font-size: 0.9rem;
+      margin-bottom: 1rem;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
 
     /* “Run Script” button */
@@ -71,6 +103,8 @@
       border-radius: 0.5rem;
       font-weight: 500;
       padding: 0.6rem 1rem;
+      font-size: 0.95rem;
+      text-align: center;
     }
     .btn-run:hover {
       background-color: #1558B0;
@@ -78,15 +112,26 @@
 
     /* Indent nested folders */
     .nested-level-1 {
-      margin-left: 1.5rem;
+      margin-left: 1rem;
     }
     .nested-level-2 {
-      margin-left: 3rem;
+      margin-left: 2rem;
     }
     .nested-level-3 {
-      margin-left: 4.5rem;
+      margin-left: 3rem;
     }
-    /* Add more as needed */
+
+    /* Folder‐icon sizing */
+    .folder-icon {
+      width: 2rem;
+      height: 2rem;
+      object-fit: contain;
+    }
+
+    /* Hide an accordion item when it has no matching children */
+    .hidden-folder {
+      display: none !important;
+    }
   </style>
 {% endblock %}
 
@@ -103,15 +148,23 @@
 
   <div class="container mt-5">
     <!-- Section Heading -->
-    <div class="row mb-4 section-heading">
+    <div class="row mb-2 section-heading">
       <div class="col text-center">
         <h2>Script Folders</h2>
-        <p>Click a folder to expand and view its scripts.</p>
+        <p>Click a folder to expand and view its scripts, or search below.</p>
       </div>
     </div>
 
+    {# Search box #}
+    <input
+      type="text"
+      id="searchBox"
+      class="form-control"
+      placeholder="Search scripts by name or path..."
+    />
+
     {% if script_tree.subdirs|length == 0 and script_tree.files|length == 0 %}
-      <div class="row">
+      <div class="row mt-4">
         <div class="col">
           <div class="alert alert-warning text-center" role="alert">
             No scripts found in <code>scripts/</code>.
@@ -132,8 +185,8 @@
                 aria-expanded="true"
                 aria-controls="collapse-General"
               >
-                <i class="bi bi-folder-fill me-3"></i>
-                General
+                <i class="bi bi-folder-fill"></i>
+                <span>General</span>
               </button>
             </h2>
             <div
@@ -143,10 +196,10 @@
               data-bs-parent="#rootAccordion"
             >
               <div class="accordion-body">
-                <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 g-4">
+                <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 g-4 justify-content-center">
                   {% for fname in script_tree.files %}
-                    <div class="col">
-                      <div class="card script-card h-100">
+                    <div class="col d-flex align-items-stretch script-wrapper">
+                      <div class="card script-card">
                         <div class="card-body d-flex flex-column">
                           <h5 class="card-title">{{ fname }}</h5>
                           <p class="card-subtitle mb-4">
@@ -174,8 +227,9 @@
         {# Recursive macro for nested folders #}
         {% macro render_folder(node, path, parent_id, level=0) %}
           {% for folder, subtree in node.subdirs.items() %}
+            {% set folder_path = (path ~ '/' ~ folder).lstrip('/') %}
             {% set folder_id = parent_id ~ "-" ~ loop.index %}
-            <div class="accordion-item mb-3 {% if level==1 %}nested-level-1{% elif level==2 %}nested-level-2{% elif level==3 %}nested-level-3{% endif %}">
+            <div class="accordion-item mb-3 {% if level == 1 %}nested-level-1{% elif level == 2 %}nested-level-2{% elif level == 3 %}nested-level-3{% endif %}">
               <h2 class="accordion-header" id="heading-{{ folder_id }}">
                 <button
                   class="accordion-button collapsed"
@@ -185,8 +239,13 @@
                   aria-expanded="false"
                   aria-controls="collapse-{{ folder_id }}"
                 >
-                  <i class="bi bi-folder-fill me-3"></i>
-                  {{ folder }}
+                  <img
+                    src="/scripts/{{ folder_path }}/icon.png"
+                    onerror="this.onerror=null; this.src='{{ url_for('static', filename='default_icon.png') }}';"
+                    alt="{{ folder }} icon"
+                    class="folder-icon"
+                  />
+                  <span>{{ folder }}</span>
                 </button>
               </h2>
               <div
@@ -198,10 +257,10 @@
                 <div class="accordion-body">
                   {# Files in this folder #}
                   {% if subtree.files %}
-                    <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 g-4 mb-4">
+                    <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 g-4 mb-4 justify-content-center">
                       {% for fname in subtree.files %}
-                        <div class="col">
-                          <div class="card script-card h-100">
+                        <div class="col d-flex align-items-stretch script-wrapper" data-folder="{{ folder_path }}">
+                          <div class="card script-card">
                             <div class="card-body d-flex flex-column">
                               <h5 class="card-title">{{ fname }}</h5>
                               <p class="card-subtitle mb-4">
@@ -225,7 +284,7 @@
 
                   {# Nested subfolders #}
                   <div class="accordion" id="nestedAccordion-{{ folder_id }}">
-                    {{ render_folder(subtree, path ~ '/' ~ folder, "nestedAccordion-" ~ folder_id, level+1) }}
+                    {{ render_folder(subtree, path ~ '/' ~ folder, "nestedAccordion-" ~ folder_id, level + 1) }}
                   </div>
                 </div>
               </div>
@@ -237,4 +296,77 @@
       </div>
     {% endif %}
   </div>
+
+  {# JavaScript: filter scripts and collapse all when search is cleared #}
+  <script>
+    document.addEventListener("DOMContentLoaded", function () {
+      const searchBox = document.getElementById("searchBox");
+      searchBox.addEventListener("input", function () {
+        const query = this.value.trim().toLowerCase();
+
+        if (query === "") {
+          resetAll();
+        } else {
+          filterScripts(query);
+        }
+      });
+
+      function resetAll() {
+        // 1) Show all scripts
+        document.querySelectorAll(".script-wrapper").forEach((wrapper) => {
+          wrapper.classList.remove("d-none");
+        });
+
+        // 2) Remove hidden-folder from all items
+        document.querySelectorAll(".hidden-folder").forEach((item) => {
+          item.classList.remove("hidden-folder");
+        });
+
+        // 3) Collapse all open accordions
+        document.querySelectorAll(".accordion-collapse.show").forEach((collapseEl) => {
+          bootstrap.Collapse.getOrCreateInstance(collapseEl).hide();
+        });
+      }
+
+      function filterScripts(query) {
+        // 1) Show/hide each script wrapper based on the query
+        document.querySelectorAll(".script-wrapper").forEach((wrapper) => {
+          const titleEl = wrapper.querySelector(".card-title");
+          const subtitleEl = wrapper.querySelector(".card-subtitle");
+          const text = (titleEl.textContent + " " + subtitleEl.textContent).toLowerCase();
+
+          if (text.includes(query)) {
+            wrapper.classList.remove("d-none");
+          } else {
+            wrapper.classList.add("d-none");
+          }
+        });
+
+        // 2) Traverse all accordion-items bottom-up: hide those with no visible scripts/subfolders
+        const allItems = Array.from(document.querySelectorAll(".accordion-item")).reverse();
+        allItems.forEach((item) => {
+          // Check for any visible script in this item
+          const hasVisibleScript = Array.from(item.querySelectorAll(".script-wrapper"))
+            .some((w) => !w.classList.contains("d-none"));
+
+          // Check for any visible child folder (submenu) not marked hidden
+          const hasVisibleChildFolder = Array.from(item.querySelectorAll(".accordion-item"))
+            .some((child) => !child.classList.contains("hidden-folder"));
+
+          const collapseEl = item.querySelector(".accordion-collapse");
+
+          if (hasVisibleScript || hasVisibleChildFolder) {
+            item.classList.remove("hidden-folder");
+
+            // If it directly contains visible scripts but is collapsed, expand it
+            if (hasVisibleScript && collapseEl && !collapseEl.classList.contains("show")) {
+              bootstrap.Collapse.getOrCreateInstance(collapseEl).show();
+            }
+          } else {
+            item.classList.add("hidden-folder");
+          }
+        });
+      }
+    });
+  </script>
 {% endblock %}

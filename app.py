@@ -3,11 +3,20 @@ import sys
 import inspect
 import subprocess
 import datetime
+from flask import send_from_directory
 
 from flask import Flask, render_template, request, Response, url_for, redirect
 
 app = Flask(__name__, static_folder="static", template_folder="templates")
 SCRIPTS_DIR = os.path.join(os.path.dirname(__file__), "scripts")
+
+@app.route("/scripts/<path:filename>")
+def serve_script_file(filename):
+    """
+    Serve any file under the `scripts/` folder so that
+    /scripts/<folder_path>/icon.png resolves.
+    """
+    return send_from_directory(SCRIPTS_DIR, filename)
 
 
 def build_script_tree(base_path):
@@ -209,4 +218,4 @@ def run_script():
 
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=5000, debug=False)
+    app.run(host="0.0.0.0", port=1000, debug=False)
