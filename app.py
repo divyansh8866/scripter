@@ -10,6 +10,21 @@ from flask import Flask, render_template, request, Response, url_for, redirect
 app = Flask(__name__, static_folder="static", template_folder="templates")
 SCRIPTS_DIR = os.path.join(os.path.dirname(__file__), "scripts")
 
+
+@app.route("/docs", methods=["GET"])
+def docs():
+    """
+    Render the Documentation page.
+    """
+    return render_template("docs.html")
+
+@app.route("/about", methods=["GET"])
+def about():
+    """
+    Render the About page.
+    """
+    return render_template("about.html")
+
 @app.route("/scripts/<path:filename>")
 def serve_script_file(filename):
     """
@@ -218,4 +233,4 @@ def run_script():
 
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=1000, debug=False)
+    app.run(host="0.0.0.0", port=5000, debug=False)

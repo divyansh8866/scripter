@@ -1,0 +1,351 @@
+{% extends "base.html" %}
+
+{% block title %}Documentation – Scripter{% endblock %}
+
+{% block extra_head %}
+  <style>
+    /* Hero banner for Docs */
+    .docs-hero {
+      background: linear-gradient(90deg, #1F6FEB 0%, #0053A0 100%);
+      color: #FFFFFF;
+      padding: 3rem 1rem;
+      text-align: center;
+      border-radius: 0 0 0.75rem 0.75rem;
+    }
+    .docs-hero h1 {
+      font-size: 2.5rem;
+      font-weight: 700;
+      margin-bottom: 0.5rem;
+    }
+    .docs-hero p {
+      font-size: 1.125rem;
+      max-width: 700px;
+      margin: 0 auto;
+    }
+    /* Section headings */
+    .docs-section h2 {
+      font-weight: 600;
+      color: #0A2540;
+      margin-top: 2rem;
+      margin-bottom: 1rem;
+    }
+    .docs-section p {
+      color: #4A4A4A;
+      line-height: 1.6;
+      margin-bottom: 1rem;
+    }
+    pre {
+      background-color: #F8F9FA;
+      border: 1px solid #E0E0E0;
+      border-radius: 0.5rem;
+      padding: 1rem;
+      font-size: 0.95rem;
+      overflow-x: auto;
+    }
+    code {
+      background-color: #EFEFEF;
+      padding: 0.2rem 0.4rem;
+      border-radius: 0.25rem;
+      font-family: Menlo, Monaco, Consolas, "Courier New", monospace;
+    }
+    .callout {
+      border-left: 4px solid #1F6FEB;
+      background-color: #F0F8FF;
+      padding: 1rem 1.25rem;
+      border-radius: 0.25rem;
+      margin-bottom: 1.5rem;
+    }
+    .callout strong {
+      color: #1F6FEB;
+    }
+  </style>
+{% endblock %}
+
+{% block content %}
+  <!-- Hero Banner -->
+  <div class="docs-hero mb-5">
+    <h1>Scripter Documentation</h1>
+    <p>
+      Everything you need to get started with Scripter: installation,
+      configuration, usage, and deploying via Docker. Let’s dive in!
+    </p>
+  </div>
+
+  <div class="container docs-section">
+    <!-- 1. Introduction -->
+    <h2>1. Introduction</h2>
+    <p>
+      Scripter is a Flask‐based dashboard designed to help developers easily
+      browse, inspect, and run Python scripts in a folder structure. Whether you
+     ’re working on a data‐processing pipeline, automation scripts, or any
+      Python project, Scripter centralizes your workflow, provides function
+      signatures on click, and offers one-click execution.
+    </p>
+
+    <!-- 2. Prerequisites -->
+    <h2>2. Prerequisites</h2>
+    <ul>
+      <li>Python 3.7 or higher installed on your machine.</li>
+      <li>
+        <strong>Git</strong> (if you want to clone from a repository).  
+        <code>git clone https://github.com/divyansh8866/scripter.git</code>
+      </li>
+      <li>
+        <strong>pip</strong> for installing Python dependencies.  
+        <code>python3 -m pip install --upgrade pip</code>
+      </li>
+      <li>
+        Docker & Docker Compose (optional, for containerized deployment).
+        <br />
+        • Docker Engine CLI:  
+        <a href="https://docs.docker.com/get-docker/" target="_blank">https://docs.docker.com/get-docker/</a>  
+        • Docker Compose:  
+        <a href="https://docs.docker.com/compose/install/" target="_blank">https://docs.docker.com/compose/install/</a>
+      </li>
+    </ul>
+
+    <!-- 3. Installation (Local Setup) -->
+    <h2>3. Installation (Local Setup)</h2>
+    <p>
+      Follow these steps to run Scripter on your local machine:
+    </p>
+    <ol>
+      <li>
+        <strong>Clone the Repository</strong>  
+        ```bash
+        git clone https://github.com/divyansh8866/scripter.git
+        cd scripter
+        ```
+      </li>
+      <li>
+        <strong>Create a Virtual Environment</strong>  
+        ```bash
+        python3 -m venv venv
+        source venv/bin/activate
+        ```
+      </li>
+      <li>
+        <strong>Install Dependencies</strong>  
+        The project’s core dependencies are listed in <code>requirements.txt</code>.  
+        If your scripts rely on additional third-party packages, list them here
+        as well. Then run:  
+        ```bash
+        pip install -r requirements.txt
+        ```
+      </li>
+      <li>
+        <strong>Configure Environment Variables (Optional)</strong><br />
+        If you need any custom configuration (e.g., API keys, database URLs),
+        set them in your shell or a <code>.env</code> file. By default, Scripter
+        has no required environment variables.
+      </li>
+      <li>
+        <strong>Prepare the <code>scripts/</code> Directory</strong><br />
+        Ensure there is a top‐level folder named <code>scripts/</code> in the
+        project root. Inside it, create subfolders and add your <code>.py</code>
+        files. For example:
+        <pre>
+scripter/
+├── app.py
+├── requirements.txt
+├── scripts/
+│   ├── data/
+│   │   ├── clean_data.py
+│   │   └── analyze.py
+│   └── utils/
+│       ├── helpers.py
+│       └── math_utils.py
+├── static/
+├── templates/
+└── ...
+        </pre>
+      </li>
+      <li>
+        <strong>Run the Application</strong>  
+        ```bash
+        export FLASK_APP=app.py
+        export FLASK_ENV=development  # optional, enables debug mode
+        flask run
+        ```
+        By default, it will start at <code>http://127.0.0.1:5000</code>. Open
+        that URL in your browser to access Scripter.
+      </li>
+    </ol>
+
+    <!-- 4. Adding Custom Modules -->
+    <h2>4. Adding Custom Modules</h2>
+    <p>
+      If your scripts import custom Python modules not included in the core
+      dependencies, you should list them in <code>requirements.txt</code>. For
+      example, if <code>clean_data.py</code> imports <code>pandas</code> and
+      <code>numpy</code>, add:
+      <pre>
+pandas>=1.5.0
+numpy>=1.24.0
+      </pre>
+      Then re‐install with:
+      <pre>
+pip install -r requirements.txt
+      </pre>
+      This ensures that when others clone your repository (or you deploy via
+      Docker), all necessary packages are installed.
+    </p>
+
+    <!-- 5. Directory Icons -->
+    <h2>5. Directory Icons</h2>
+    <p>
+      To give a folder its own icon, place a file named <code>icon.png</code>
+      inside the folder. For example:
+      <pre>
+scripts/data/icon.png
+scripts/utils/icon.png
+      </pre>
+      If <code>icon.png</code> is missing, Scripter automatically falls back
+      to the default icon located in <code>static/default_icon.png</code>.
+    </p>
+
+    <!-- 6. Running in Docker -->
+    <h2>6. Running in Docker</h2>
+      <li>
+        <strong>Build and Run</strong><br />
+        From your project root, run:
+        <pre>
+docker-compose up --build -d
+        </pre>
+        This builds the Docker image (installing everything in
+        <code>requirements.txt</code>) and starts the container in detached
+        mode. Your local <code>./</code> directory is mounted inside the
+        container so you can update code on the fly.
+      </li>
+      <li>
+        <strong>Access the Dashboard</strong><br />
+        Open <code>http://localhost:5000</code> in your browser. To view logs:
+        <pre>
+docker-compose logs -f
+        </pre>
+      </li>
+      <li>
+        <strong>Stopping</strong><br />
+        When you’re done, stop the container:
+        <pre>
+docker-compose down
+        </pre>
+      </li>
+    </ol>
+
+    <!-- 7. Usage Guide -->
+    <h2>7. Usage Guide</h2>
+    <p>
+      Once Scripter is running (locally or in Docker), here’s how to use it:
+    </p>
+    <ul>
+      <li>
+        <strong>Browse Folders</strong>:  
+        The left‐hand accordion lists all folders (and nested subfolders) under
+        <code>scripts/</code>. Click a folder to expand and view its scripts.
+      </li>
+      <li>
+        <strong>View Function Signatures</strong>:  
+        Click on any <code>.py</code> file. A panel will show all
+        function names and their parameters. This helps you understand how to
+        call each function without opening the file manually.
+      </li>
+      <li>
+        <strong>Run Scripts</strong>:  
+        Click the “Run Script” button next to a function. Fill in any arguments
+        in the form, then submit. Output appears in a console‐style window.
+      </li>
+      <li>
+        <strong>Search & Filter</strong>:  
+        Use the search box at the top to quickly find scripts by filename or
+        folder path. The accordion auto‐collapses/expands to show matching
+        results in real time.
+      </li>
+      <li>
+        <strong>Folder Icons</strong>:  
+        If a folder has its own <code>icon.png</code>, you’ll see that icon in
+        the accordion. Otherwise, a default folder icon is shown.
+      </li>
+    </ul>
+
+    <!-- 8. Contributing -->
+    <h2>8. Contributing</h2>
+    <p>
+      Scripter is an open-source project. We welcome contributions of all kinds:
+      bug fixes, new features, improved documentation, and more. To get
+      started:
+    </p>
+    <ol>
+      <li>
+        <strong>Fork the Repository</strong>  
+        <code>https://github.com/divyansh8866/scripter</code>
+      </li>
+      <li>
+        <strong>Create a New Branch</strong><br />
+        ```bash
+        git checkout -b feature/my-new-feature
+        ```
+      </li>
+      <li>
+        <strong>Make Your Changes</strong><br />
+        • Update code, add tests, and document any new behavior.  
+        • If you introduce new dependencies, add them to <code>requirements.txt</code>.
+      </li>
+      <li>
+        <strong>Run Tests & Verify</strong><br />
+        Ensure all existing functionality still works. If you added new scripts
+        that depend on extra packages, double-check that <code>requirements.txt</code>
+        is up to date.
+      </li>
+      <li>
+        <strong>Submit a Pull Request</strong>  
+        On GitHub, open a pull request describing your changes. Our maintainers
+        will review and provide feedback.
+      </li>
+    </ol>
+
+    <!-- 9. FAQs -->
+    <h2>9. Frequently Asked Questions (FAQs)</h2>
+    <div class="callout">
+      <strong>Q1: My script uses a custom module, but I get “ModuleNotFoundError.” What do I do?</strong>
+      <p>
+        Add that module to <code>requirements.txt</code>, re-install with
+        <code>pip install -r requirements.txt</code>, and restart Scripter. In
+        Docker, rebuild the image so the container installs the new dependency.
+      </p>
+    </div>
+    <div class="callout">
+      <strong>Q2: I modified a script but don’t see changes. How can I refresh?</strong>
+      <p>
+        If running locally with <code>FLASK_ENV=development</code>, Flask auto-reloads
+        on file changes. In Docker, either mount your local directory (as in
+        <code>docker-compose.yml</code>) or rebuild the image.  
+        ```bash
+        docker-compose up --build -d
+        ```
+      </p>
+    </div>
+    <div class="callout">
+      <strong>Q3: Can I run Scripter on a remote server?</strong>
+      <p>
+        Absolutely. Simply deploy the Docker container on your server (e.g., AWS,
+        DigitalOcean) and expose port 5000. Secure it behind a reverse proxy or
+        firewall. Then point your browser to the public IP/domain.
+      </p>
+    </div>
+
+    <!-- 10. Support & Contact -->
+    <h2>10. Support & Contact</h2>
+    <p>
+      If you encounter any issues, have feature requests, or need assistance,
+      feel free to:
+    </p>
+    <ul>
+      <li>Open an issue in the GitHub repository:  
+        <a href="https://github.com/divyansh8866/scripter/issues" target="_blank">
+          https://github.com/divyansh8866/scripter/issues
+        </a>
+      </li>
+    </ul>
+  </div>
+{% endblock %}

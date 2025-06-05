@@ -1,0 +1,290 @@
+{% extends "base.html" %}
+
+{% block title %}About – Scripter{% endblock %}
+
+{% block extra_head %}
+  <style>
+    /* Hero banner for About page */
+    .about-hero {
+      background: linear-gradient(90deg, #1F6FEB 0%, #0053A0 100%);
+      color: #FFFFFF;
+      padding: 4rem 1rem;
+      text-align: center;
+      border-radius: 0 0 0.75rem 0.75rem;
+    }
+    .about-hero h1 {
+      font-size: 2.5rem;
+      font-weight: 700;
+      margin-bottom: 1rem;
+    }
+    .about-hero p {
+      font-size: 1.125rem;
+      max-width: 600px;
+      margin: 0 auto;
+    }
+
+    /* Section headings */
+    .about-section h2 {
+      font-weight: 600;
+      color: #0A2540;
+      margin-bottom: 1rem;
+    }
+    .about-section p {
+      color: #4A4A4A;
+      line-height: 1.6;
+    }
+
+    /* Feature cards */
+    .feature-card {
+      border: 1px solid #E0E0E0;
+      border-radius: 0.75rem;
+      background-color: #FFFFFF;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .feature-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
+    }
+    .feature-card .card-body {
+      padding: 1.5rem;
+      text-align: center;
+    }
+    .feature-card .card-title {
+      color: #1F6FEB;
+      font-weight: 600;
+      margin-bottom: 0.75rem;
+      font-size: 1.25rem;
+    }
+    .feature-card .card-text {
+      color: #6C757D;
+      font-size: 0.95rem;
+      line-height: 1.5;
+    }
+
+    /* Team bios */
+    .team-member {
+      text-align: center;
+      margin-bottom: 2rem;
+    }
+    .team-member img {
+      border-radius: 50%;
+      width: 120px;
+      height: 120px;
+      object-fit: cover;
+      margin-bottom: 1rem;
+      border: 3px solid #1F6FEB;
+    }
+    .team-member h5 {
+      font-size: 1.125rem;
+      font-weight: 600;
+      margin-bottom: 0.25rem;
+      color: #0A2540;
+    }
+    .team-member p {
+      color: #6C757D;
+      font-size: 0.9rem;
+      margin-bottom: 0.5rem;
+    }
+    .team-member .social-icons a {
+      margin: 0 0.5rem;
+      color: #1F6FEB;
+      font-size: 1.25rem;
+      transition: color 0.2s;
+    }
+    .team-member .social-icons a:hover {
+      color: #1558B0;
+    }
+
+    /* Call-to-action footer */
+    .about-cta {
+      background-color: #F8FAFB;
+      padding: 3rem 1rem;
+      text-align: center;
+      border-radius: 0.75rem;
+      margin-top: 3rem;
+    }
+    .about-cta h3 {
+      font-size: 1.75rem;
+      font-weight: 600;
+      color: #0A2540;
+      margin-bottom: 1rem;
+    }
+    .about-cta .btn-contact {
+      background-color: #1F6FEB;
+      color: #FFFFFF;
+      border-radius: 0.5rem;
+      padding: 0.75rem 1.5rem;
+      font-weight: 500;
+    }
+    .about-cta .btn-contact:hover {
+      background-color: #1558B0;
+    }
+  </style>
+{% endblock %}
+
+{% block content %}
+  <!-- Hero Banner -->
+   <img
+  src="{{ url_for('static', filename='dp.png') }}"
+  alt="Scripter Logo"
+  class="logo d-block mx-auto img-fluid"
+/>
+  <div class="about-hero mb-5">
+    
+    <h1>About Scripter</h1>
+    <p>
+      Scripter is a powerful, intuitive dashboard designed to help developers
+      navigate, manage, and run their Python scripts seamlessly. Built with
+      productivity and clarity in mind, Scripter empowers you to organize your
+      codebase, explore function signatures, and execute scripts with a single click.
+    </p>
+  </div>
+
+  <div class="container">
+    <!-- Mission & Vision Section -->
+    <div class="row about-section mb-5">
+      <div class="col-md-6">
+        <h2>Our Mission</h2>
+        <p>
+          Our mission is to streamline the development workflow by providing a
+          centralized platform where teams can quickly locate, inspect, and run
+          their Python scripts without switching between terminals and editors.
+          We believe that reducing friction in everyday tasks leads to more focus
+          on what truly matters: building exceptional software.
+        </p>
+      </div>
+      <div class="col-md-6">
+        <h2>Our Vision</h2>
+        <p>
+          We envision a world where script management is effortless—a system that
+          adapts to each developer’s unique way of working. Whether you’re an
+          individual contributor or part of a large engineering team, Scripter
+          aims to be the go-to hub for all your Python automation needs.
+        </p>
+      </div>
+    </div>
+
+    <!-- Key Features Section -->
+    <div class="row mb-5">
+      <div class="col text-center mb-4">
+        <h2>Key Features</h2>
+      </div>
+    </div>
+    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+      <div class="col">
+        <div class="card feature-card h-100">
+          <div class="card-body">
+            <h5 class="card-title">Centralized Script View</h5>
+            <p class="card-text">
+              Browse all your Python scripts in one place, organized by folder
+              hierarchy. Easily expand or collapse folders to view nested scripts.
+            </p>
+          </div>
+        </div>
+      </div>
+      <div class="col">
+        <div class="card feature-card h-100">
+          <div class="card-body">
+            <h5 class="card-title">Function Insights</h5>
+            <p class="card-text">
+              Click on any script to inspect available functions and their
+              signatures. This enables quick understanding of inputs and outputs
+              without opening your code editor.
+            </p>
+          </div>
+        </div>
+      </div>
+      <div class="col">
+        <div class="card feature-card h-100">
+          <div class="card-body">
+            <h5 class="card-title">One-Click Execution</h5>
+            <p class="card-text">
+              Run any script directly from the dashboard. View real-time output
+              in a built-in console, making testing and debugging faster than ever.
+            </p>
+          </div>
+        </div>
+      </div>
+      <div class="col">
+        <div class="card feature-card h-100">
+          <div class="card-body">
+            <h5 class="card-title">Custom Icons & Branding</h5>
+            <p class="card-text">
+              Assign custom icons to each folder for quick visual identification,
+              or use the default icon if no custom image is provided.
+            </p>
+          </div>
+        </div>
+      </div>
+      <div class="col">
+        <div class="card feature-card h-100">
+          <div class="card-body">
+            <h5 class="card-title">Search & Filter</h5>
+            <p class="card-text">
+              Instantly search scripts by name or path. Folders automatically
+              collapse or expand based on search results to surface the matches.
+            </p>
+          </div>
+        </div>
+      </div>
+      <div class="col">
+        <div class="card feature-card h-100">
+          <div class="card-body">
+            <h5 class="card-title">Responsive Design</h5>
+            <p class="card-text">
+              Fully responsive interface built with Bootstrap ensures Scripter
+              looks and works great on any device—desktop, tablet, or mobile.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+   <!-- Team Section -->
+<div class="row about-section mt-5 mb-4">
+  <div class="col text-center">
+    <h2>Meet the Team</h2>
+  </div>
+</div>
+<div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4 justify-content-center">
+  <div class="col d-flex justify-content-center">
+    <div class="team-member text-center">
+      <img
+        src="https://divyanshpatel.com/images/dp.jpg"
+        alt="Divyansh Patel"
+        class="img-fluid rounded-circle mb-3"
+        style="width: 120px; height: 120px; object-fit: cover; border: 3px solid #1F6FEB;"
+      />
+      <h5>Divyansh Patel</h5>
+      <p>Founder & Lead Developer</p>
+      <div class="social-icons">
+        <a href="https://github.com/divyansh8866" target="_blank"><i class="bi bi-github"></i></a>
+        <a href="https://www.linkedin.com/in/pateldivyansh/" target="_blank"><i class="bi bi-linkedin"></i></a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Invitation Section -->
+<div class="row mt-5 mb-5">
+  <div class="col-md-8 offset-md-2 text-center">
+    <h3 class="mb-3">Join Our Open-Source Journey</h3>
+    <p class="mb-4" style="color: #4A4A4A; font-size: 1rem; line-height: 1.6;">
+      We’re always looking for passionate developers, designers, and contributors to help make Scripter even better.
+      Whether you’re interested in improving the UI, adding new features, or optimizing performance, your skills are welcome here.
+      <br /><br />
+    </p>
+    <a href="https://github.com/divyansh8866/scripter" target="_blank" class="btn btn-primary btn-lg">
+      Contribute on GitHub
+    </a>
+  </div>
+</div>
+
+    <!-- Call-to-Action Section -->
+    <div class="about-cta">
+      <h3>Have questions or feedback?</h3>
+      <p>We’d love to hear from you. Reach out and let us know how we can improve Scripter!</p>
+      <!-- <a href="mailto:support@scripter.io" class="btn btn-contact">Contact Us</a> -->
+    </div>
+  </div>
+{% endblock %}

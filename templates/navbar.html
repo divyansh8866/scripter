@@ -35,15 +35,21 @@
           >Home</a>
         </li>
         <li class="nav-item">
-          <a class="nav-link" href="#">About</a>
+          <a class="nav-link" href="{{ url_for('about') }}">About</a>
         </li>
         <li class="nav-item">
-          <a class="nav-link" href="#">Contact</a>
+          <a
+            class="nav-link{% if request.endpoint == 'docs' %} active{% endif %}"
+            href="{{ url_for('docs') }}"
+          >Documentation</a>
+        </li>
+                <li class="nav-item">
+          <a class="nav-link" href="https://github.com/divyansh8866/scripter">Github</a>
         </li>
         <!-- Creator tag -->
-        <li class="nav-item d-flex align-items-center ms-3">
+        <!-- <li class="nav-item d-flex align-items-center ms-3">
           <span class="badge bg-secondary">Created by Divyansh Patel</span>
-        </li>
+        </li> -->
       </ul>
     </div>
   </div>
