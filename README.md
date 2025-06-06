@@ -1,8 +1,16 @@
 # Scripter
-
+![Scripter Logo](doc/thumbnail.jpg)
 A Flask-based web application that allows users to browse, configure, and run Python scripts through a browser interface. Scripts are automatically introspected to discover their functions and parameters. A modern Bootstrap 5 UI dynamically generates forms (with type validation and default values) for each function. When executed, a dispatcher launches the chosen function as a subprocess, and real-time logs are streamed back to the web interface.
 
 ---
+## Demo Screenshots
+
+1. **Home Dashboard**  
+   ![Home Dashboard](doc/sc1.png)
+
+2. **Script Execution Output**  
+   ![Function Preview](doc/sc2.png)
+
 
 ## Table of Contents
 
