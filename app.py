@@ -36,23 +36,21 @@ def serve_script_file(filename):
 
 def build_script_tree(base_path):
     """
-    Recursively walk base_path and return a nested dict structure:
-      {
-        "files": [list of .py filenames in this directory],
-        "subdirs": {
-           subfolder_name: { ... same structure ... },
-           ...
-        }
-      }
+    Recursively build:
+      { files: [ { name, functions: [...] } ], subdirs: {...} }
     """
     tree = {"files": [], "subdirs": {}}
     for entry in sorted(os.listdir(base_path)):
         full = os.path.join(base_path, entry)
         if os.path.isdir(full) and not entry.startswith("__"):
-            # Recurse into subfolder
             tree["subdirs"][entry] = build_script_tree(full)
-        elif os.path.isfile(full) and entry.endswith(".py") and not entry.startswith("__"):
-            tree["files"].append(entry)
+        elif entry.endswith(".py") and not entry.startswith("__"):
+            module_name, _ = os.path.splitext(entry)
+            funcs = list_functions(module_name, base_path)
+            tree["files"].append({
+                "name": entry,
+                "functions": list(funcs.keys())
+            })
     return tree
 
 
@@ -74,6 +72,7 @@ def index():
 
 
 def list_functions(module_name: str, module_folder: str):
+    # existing implementation
     sys.path.insert(0, module_folder)
     try:
         module = __import__(module_name)
@@ -81,12 +80,16 @@ def list_functions(module_name: str, module_folder: str):
         return {}
     finally:
         sys.path.pop(0)
-
     funcs = {}
     for attr_name, attr_val in vars(module).items():
         if inspect.isfunction(attr_val) and attr_val.__module__ == module_name:
             funcs[attr_name] = inspect.signature(attr_val)
     return funcs
+
+@app.context_processor
+def inject_current_year():
+    return {"current_year": datetime.datetime.now().year}
+
 
 
 @app.route("/select/<path:folder_and_script>", methods=["GET"])
@@ -233,4 +236,4 @@ def run_script():
 
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=5000, debug=False)
+    app.run(debug=True, host="0.0.0.0", port=5000)
